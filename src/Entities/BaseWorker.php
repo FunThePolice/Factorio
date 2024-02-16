@@ -2,10 +2,11 @@
 
 namespace App\Entities;
 
-use App\Entities\Contract\IEntity;
-use App\WorkPlace\Contract\IWorkPlace;
+use App\Entities\Contracts\IWorker;
+use App\Resources\Contracts\IResource;
+use App\WorkPlace\Contracts\IWorkPlace;
 
-abstract class BaseEntity implements IEntity
+abstract class BaseWorker implements IWorker
 {
     protected string $name;
     protected string $occupation;
@@ -25,6 +26,29 @@ abstract class BaseEntity implements IEntity
     protected int $currentExp;
     protected int $expToLvlUp;
 
+
+    public function produceResources($resourcesToProduce): array
+    {
+        $producedResources = [];
+        foreach ($resourcesToProduce as $resource) {
+            $i = 1;
+            while ($i <= $this->getProductPerPeriod()) {
+                /** @var IResource $resource */
+                $producedResources[] = new $resource();
+                $i++;
+            }
+        }
+        $this->assignProducer($producedResources);
+        return $producedResources;
+    }
+
+    public function assignProducer($resources): void
+    {
+        foreach ($resources as $resource) {
+            /** @var IResource $resource */
+            $resource->setProducer($this);
+        }
+    }
     public function getName(): string
     {
         return $this->name;

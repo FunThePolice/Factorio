@@ -2,12 +2,12 @@
 
 namespace App\Entities\Workers;
 
-use App\Entities\BaseEntity;
+use App\Entities\BaseWorker;
 
-class Farmer extends BaseEntity
+class Farmer extends BaseWorker
 {
     protected string $occupation = 'Farming';
-    protected  int $productPerPeriod = 1;
+    protected  int $productPerPeriod = 2;
     protected int $maxHealth = 100;
     protected int $currentHealth = 100;
     protected int $entityCost = 10;

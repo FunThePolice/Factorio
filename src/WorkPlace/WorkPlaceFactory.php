@@ -3,15 +3,15 @@
 namespace App\WorkPlace;
 
 use App\State\State;
-use App\WorkPlace\Contract\IWorkPlace;
+use App\WorkPlace\Contracts\IWorkPlace;
 
 class WorkPlaceFactory
 {
     protected State $state;
 
-    public function __construct(State $state)
+    public function __construct()
     {
-        $this->state = $state;
+
     }
     public function createWorkPlace(string $type,State $state,string $name): IWorkPlace
     {

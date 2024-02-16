@@ -2,10 +2,11 @@
 
 namespace App\MainManager;
 
-use App\Entities\Contract\IEntity;
+use App\Entities\Contracts\IEntity;
+use App\Entities\Contracts\IWorker;
 use App\State\State;
 use App\WorkPlace\BaseWorkPlace;
-use App\WorkPlace\Contract\IWorkPlace;
+use App\WorkPlace\Contracts\IWorkPlace;
 
 class MainManager
 {
@@ -32,8 +33,9 @@ class MainManager
     public function manageAll(): void
     {
         $this->manageWorkPlaces();
+        dump($this->state->getStateResources()->getStorageValue());
     }
-    public function addEntity(IEntity $worker): void
+    public function addEntity(IWorker $worker): void
     {
         $this->workers[] = $worker;
     }
@@ -41,19 +43,6 @@ class MainManager
     {
         $this->workPlaces[] = $workPlace;
     }
-
-    public function addEntityToWorkplace(IEntity $worker,IWorkplace $workplace): void
-    {
-        /** @var IEntity $entity */
-        foreach ($this->workers as $key => $entity) {
-            if ($entity->getName() === $worker->getName()) {
-                $entity->setIsWorking(true);
-                $workplace->addWorker($entity);
-            }
-
-            }
-        }
-
 
     public function manageWorkers(): void
     {

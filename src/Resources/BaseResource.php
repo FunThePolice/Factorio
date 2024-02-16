@@ -2,15 +2,16 @@
 
 namespace App\Resources;
 
-use App\Entities\BaseEntity;
-use App\Resources\Contract\IResource;
+use App\Entities\BaseWorker;
+use App\Entities\Contracts\IWorker;
+use App\Resources\Contracts\IResource;
 
 abstract class BaseResource implements IResource
 {
     protected string $name;
     protected int $value;
     protected string $type;
-    protected BaseEntity $parent;
+    protected IWorker $producer;
 
     public function getName(): string
     {
@@ -22,14 +23,27 @@ abstract class BaseResource implements IResource
         return $this->value;
     }
 
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
     public function setValue(int $value): void
     {
         $this->value = $value;
     }
 
-    public function getParent(): BaseEntity
+    public function getProducer(): IWorker
     {
-        return $this->parent;
+        return $this->producer;
+    }
+
+    /**
+     * @param IWorker $producer
+     */
+    public function setProducer(BaseWorker $producer): void
+    {
+        $this->producer = $producer;
     }
 
 }

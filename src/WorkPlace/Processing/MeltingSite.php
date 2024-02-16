@@ -5,7 +5,7 @@ namespace App\WorkPlace\Processing;
 use App\Resources\MineResources\Iron;
 use App\Resources\PartsItems\Parts;
 use App\WorkPlace\BaseWorkPlace;
-use App\WorkPlace\Contract\IRecycle;
+use App\WorkPlace\Contracts\IRecycle;
 
 class MeltingSite extends BaseWorkPlace implements IRecycle
 {

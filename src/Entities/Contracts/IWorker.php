@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Entities\Contract;
+namespace App\Entities\Contracts;
 
-use App\WorkPlace\Contract\IWorkPlace;
+use App\WorkPlace\Contracts\IWorkPlace;
 
-interface IEntity
+interface IWorker
 {
+
+    public function produceResources($resourcesToProduce): array;
     public function getName(): string;
     public function setName(string $name): void;
     public function getOccupation(): string;

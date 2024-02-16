@@ -1,6 +1,8 @@
 <?php
 
-namespace App\WorkPlace\Contract;
+namespace App\WorkPlace\Contracts;
+
+use App\Entities\Contracts\IWorker;
 
 interface IWorkPlace
 {
@@ -14,5 +16,6 @@ interface IWorkPlace
     public function getOccupation(): string;
     public function setName(string $name): void;
     public function processWork($worker): void;
+    public function addWorker(IWorker $worker): void;
 
 }

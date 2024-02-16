@@ -7,5 +7,5 @@ use App\Resources\BaseResource;
 class Parts extends BaseResource
 {
     protected string $name = 'Parts';
-    protected string $type = 'MeltingSite';
+    protected string $type = 'Processing';
 }

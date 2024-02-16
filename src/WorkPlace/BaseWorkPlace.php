@@ -2,22 +2,22 @@
 
 namespace App\WorkPlace;
 
-use App\Entities\Contract\IEntity;
-use App\Resources\Contract\IResource;
+use App\Entities\Contracts\IWorker;
+use App\Resources\Contracts\IResource;
 use App\Resources\MineResources\Iron;
 use App\State\State;
-use App\WorkPlace\Contract\IRecycle;
-use App\WorkPlace\Contract\IWorkPlace;
+use App\WorkPlace\Contracts\IRecycle;
+use App\WorkPlace\Contracts\IWorkPlace;
 use App\WorkPlace\Processing\MeltingSite;
 
 abstract class BaseWorkPlace implements IWorkPlace
 {
     protected string $name;
     protected int $maxResources = 0;
-    protected int $currentResources = 0;
+    protected int $currentResources ;
     protected int $workersCapacity = 0;
 
-    /** @var $workersInUse IEntity[] */
+    /** @var $workersInUse IWorker[] */
     protected array $workersInUse = [];
     protected string $typeOfProduct;
     protected string $occupation;
@@ -37,109 +37,63 @@ abstract class BaseWorkPlace implements IWorkPlace
 
         foreach ($this->workersInUse as $key => $worker) {
 
-//            if ($this instanceof IRecycle) {
-//                $this->currentResources = count($this->getRequiredResources());
-//            }
-
-
-//            if ($this->isEmpty()) {
-//                break;
-//            }
-
-//            if ($this->workersInUse > $this->workersCapacity){
-//                break;
-//            }
-//
-//            if ($this->currentResources <= $worker->getProductPerPeriod()) {
-//                $gatheredResources += $this->currentResources;
-//                $this->currentResources = 0;
-//                break;
-//            }
-                $this->processWork($worker);
-            dump($this->resourcesRequired);
+            if ($this instanceof IRecycle) {
+                $this->currentResources = $this->getRequiredResourcesNumber();
             }
+
+            if ($this->isEmpty()) {
+                break;
+            }
+
+            if (count($this->workersInUse) > $this->workersCapacity){
+                break;
+            }
+
+            if ($this->currentResources <= $worker->getProductPerPeriod()) {
+                $worker->setProductPerPeriod($this->currentResources);
+                $this->currentResources = 0;
+                break;
+            }
+
+            $this->processWork($worker);
+
+            //dump($this->state->getStateResources()->getStorageValue());
+        }
 
     }
 
     public function processWork($worker): void
     {
-        $gatheredResources = [];
-            foreach ($this->resourcesToProduce as $resource) {
-                while (count($gatheredResources) < $worker->getProductPerPeriod()) {
-                    /** @var IResource $resource */
-                    $gatheredResources[] = new $resource();
+        /** @var IWorker $worker */
+        $gatheredResources = $worker->produceResources($this->resourcesToProduce);
+        $this->state->getStateResources()->addItems($gatheredResources);
 
-//                    if ($this instanceof IRecycle) {
-//                        $this->useRequiredResource();
-//                    }
-
-                }
-            }
-            $this->distribute($gatheredResources);
-            $this->currentResources = $this->currentResources - count($gatheredResources);
-    }
-
-    public function recycleWork($worker): void
-    {
-        $gatheredResources = [];
-
-        foreach ($this->resourcesToProduce as $resource) {
-            while (count($gatheredResources) < $worker->getProductPerPeriod()) {
-                /** @var IResource $resource */
-                $gatheredResources[] = new $resource();
-                $this->useRequiredResource();
-            }
+        if ($this instanceof IRecycle) {
+            $this->useRequiredResource($worker->getProductPerPeriod());
         }
-        $this->distribute($gatheredResources);
+
+        $this->currentResources = $this->currentResources - count($gatheredResources);
     }
 
-    public function distribute($resources): void
-    {
-        foreach ($resources as $resource) {
-
-            if ($this->occupation === 'Farming') {
-                $this->state->getStateFoodResources()->addItem($resource);
-                $this->state->getStateFoodResources()->distribute($resource);
-                // var_dump($this->state->getStateFoodResources()->getCornState()->getCornStorage());
-            }
-
-            if ($this->occupation === 'Mining') {
-                $this->state->getStateMineResources()->addItem($resource);
-                $this->state->getStateMineResources()->distribute($resource);
-                //var_dump($this->state->getStateMineResources()->getIron());
-            }
-
-            if ($this->occupation === 'Processing') {
-                $this->state->getStatePartsItems()->addItem($resource);
-                $this->state->getStatePartsItems()->distribute($resource);
-                //var_dump($this->state->getStatePartsItems()->getParts());
-            }
-
-        }
-    }
-
-    public function useRequiredResource(): void
+    public function useRequiredResource(int $amount): void
     {
         foreach ($this->resourcesRequired as $resource) {
-
-            if ($resource instanceof Iron) {
-                $this->state->getStateMineResources()->getIronStorage()->removeIronFromStorage();
-            }
-
+            /** @var IResource $resource */
+            $var = new $resource();
+            $this->state->getStateResources()->removeItemsByType($amount,$var->getType());
         }
     }
 
-    public function getRequiredResources(): array
+    public function getRequiredResourcesNumber(): int
     {
-        $resources = [];
-
+        $result = 0;
         foreach ($this->resourcesRequired as $resource) {
-
-            if ($resource instanceof Iron) {
-                $resources = $this->state->getStateMineResources()->getIronStorage()->getStorage();
-            }
+            /** @var IResource $resource */
+            $var = new $resource();
+            $result = $this->state->getStateResources()->countItemsOfType($var->getType());
         }
-        return $resources;
+        $result += $result;
+        return $result;
     }
 
     public function getName(): string
@@ -177,9 +131,10 @@ abstract class BaseWorkPlace implements IWorkPlace
         return $this->workersInUse;
     }
 
-    public function addWorker(IEntity $worker): void
+    public function addWorker(IWorker $worker): void
     {
         $this->workersInUse[] = $worker;
+        $worker->setIsWorking(true);
     }
 
     public function removeWorkers(): void

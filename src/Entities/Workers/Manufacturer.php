@@ -2,9 +2,9 @@
 
 namespace App\Entities\Workers;
 
-use App\Entities\BaseEntity;
+use App\Entities\BaseWorker;
 
-class Manufacturer extends BaseEntity
+class Manufacturer extends BaseWorker
 {
     protected string $occupation = 'Manufacturing';
     protected  int $productPerPeriod = 1;
