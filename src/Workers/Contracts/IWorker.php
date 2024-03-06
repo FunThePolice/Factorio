@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entities\Contracts;
+namespace App\Workers\Contracts;
 
+use App\UtilityPlace\Contracts\IUtility;
 use App\WorkPlace\Contracts\IWorkPlace;
 
 interface IWorker
@@ -15,8 +16,8 @@ interface IWorker
     public function setProductPerPeriod(int $productPerPeriod): void;
     public function isWorking(): bool;
     public function setIsWorking(bool $isWorking): void;
-    public function getCurrentWorkPlace(): IWorkPlace;
-    public function setCurrentWorkPlace(IWorkPlace $workPlace): void;
+    public function getCurrentPlace();
+    public function setCurrentPlace($currentPlace): void;
     public function getMaxHealth(): int;
     public function getCurrentHealth(): int;
     public function setCurrentHealth(int $currentHealth): void;

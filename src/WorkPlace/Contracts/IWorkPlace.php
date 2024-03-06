@@ -2,7 +2,7 @@
 
 namespace App\WorkPlace\Contracts;
 
-use App\Entities\Contracts\IWorker;
+use App\Workers\Contracts\IWorker;
 
 interface IWorkPlace
 {

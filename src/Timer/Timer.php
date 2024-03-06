@@ -2,11 +2,11 @@
 
 namespace App\Timer;
 
-use App\Entities\Workers\Farmer;
-use App\Entities\Workers\Manufacturer;
-use App\Entities\Workers\Miner;
-use App\Entities\Workers\Processor;
-use App\Entities\WorkersFactory;
+use App\Workers\Workers\Farmer;
+use App\Workers\Workers\Manufacturer;
+use App\Workers\Workers\Miner;
+use App\Workers\Workers\Processor;
+use App\Workers\WorkersFactory;
 use App\MainManager\MainManager;
 use App\Resources\MineResources\Iron;
 use App\State\State;
@@ -21,6 +21,8 @@ class Timer
     protected MainManager $mainManager;
 
     protected State $state;
+
+    const TICK_INTERVAL = 3;
 
 
     public function __construct(MainManager $mainManager,State $state)
@@ -37,26 +39,18 @@ class Timer
     function start(): void
     {
         $active = true;
-        $interval = 3;
-        $nextTime = microtime(true) + $interval; // Set initial delay
+        $nextTime = microtime(true) + static::TICK_INTERVAL; // Set initial delay
 
         $workersFactory = new WorkersFactory();
         $workPlaceFactory = new WorkPlaceFactory();
-        $worker1 = $workersFactory->createWorker(Miner::class,'Fucker');
-        $worker2 = $workersFactory->createWorker(Processor::class, 'fuck');
-        $worker3 = $workersFactory->createWorker(Manufacturer::class,'Ford');
+        $worker1 = $workersFactory->createWorker(Miner::class,$this->state,'Fucker');
         $workPlace1 = $workPlaceFactory->createWorkPlace(IronMine::class,$this->state,'CockFarm');
-        $workPlace2 = $workPlaceFactory->createWorkPlace(MeltingSite::class,$this->state,'Melt');
-        $workPlace3 = $workPlaceFactory->createWorkPlace(AssambleyShop::class,$this->state,'Ass');
-        $this->mainManager->addEntity($worker1);
-        $this->mainManager->addEntity($worker2);
-        $this->mainManager->addEntity($worker3);
+
+        $this->mainManager->addWorker($worker1);
         $this->mainManager->addWorkplace($workPlace1);
-        $this->mainManager->addWorkplace($workPlace2);
-        $this->mainManager->addWorkplace($workPlace3);
+
         $workPlace1->addWorker($worker1);
-        $workPlace2->addWorker($worker2);
-        $workPlace3->addWorker($worker3);
+
         //$this->state->getStateResources()->addItems([new Iron(),new Iron()]);
 
         while($active) {
@@ -64,7 +58,7 @@ class Timer
 
             if (microtime(true) >= $nextTime) {
                 $this->runIt();
-                $nextTime = microtime(true) + $interval;
+                $nextTime = microtime(true) + static::TICK_INTERVAL;
             }
 
             // Do other stuff (you can have as many other timers as you want)

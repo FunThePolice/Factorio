@@ -2,14 +2,13 @@
 
 namespace App\State;
 
-use App\Resources\BaseResource;
 use App\Resources\Contracts\IResource;
-use App\Resources\MineResources\Iron;
+use Exception;
 
 class StateResources
 {
 
-    protected BaseResource $resource;
+    protected IResource $resource;
     protected array $storage = [
         'Farming' => [],
         'Mining' => [],
@@ -31,20 +30,23 @@ class StateResources
         return $result;
     }
 
-    public function addItem(IResource $resource): void
-    {
-        $this->storage[$resource->getType()][] = $resource;
-    }
-
     public function addItems(array $resources): void
     {
         foreach ($resources as $resource) {
-            $this->addItem($resource);
+            $this->storage[$resource->getType()][] = $resource;
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function removeItemsByType(int $amount, string $type): void
     {
+
+        if ($this->countItemsOfType($type) <= 0) {
+            throw new Exception('No resources of type');
+        }
+
         array_splice($this->storage[$type],0,$amount);
     }
 

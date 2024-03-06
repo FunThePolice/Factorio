@@ -2,13 +2,14 @@
 
 namespace App\WorkPlace;
 
-use App\Entities\Contracts\IWorker;
+use App\Workers\Contracts\IWorker;
 use App\Resources\Contracts\IResource;
 use App\Resources\MineResources\Iron;
 use App\State\State;
 use App\WorkPlace\Contracts\IRecycle;
 use App\WorkPlace\Contracts\IWorkPlace;
 use App\WorkPlace\Processing\MeltingSite;
+use Exception;
 
 abstract class BaseWorkPlace implements IWorkPlace
 {
@@ -45,10 +46,6 @@ abstract class BaseWorkPlace implements IWorkPlace
                 break;
             }
 
-            if (count($this->workersInUse) > $this->workersCapacity){
-                break;
-            }
-
             if ($this->currentResources <= $worker->getProductPerPeriod()) {
                 $worker->setProductPerPeriod($this->currentResources);
                 $this->currentResources = 0;
@@ -80,7 +77,7 @@ abstract class BaseWorkPlace implements IWorkPlace
         foreach ($this->resourcesRequired as $resource) {
             /** @var IResource $resource */
             $var = new $resource();
-            $this->state->getStateResources()->removeItemsByType($amount,$var->getType());
+            $this->state->getStateResources()->removeItemsByType($amount, $var->getType());
         }
     }
 
@@ -91,8 +88,8 @@ abstract class BaseWorkPlace implements IWorkPlace
             /** @var IResource $resource */
             $var = new $resource();
             $result = $this->state->getStateResources()->countItemsOfType($var->getType());
+            $result += $result;
         }
-        $result += $result;
         return $result;
     }
 
@@ -131,11 +128,21 @@ abstract class BaseWorkPlace implements IWorkPlace
         return $this->workersInUse;
     }
 
+    /**
+     * @throws Exception
+     */
     public function addWorker(IWorker $worker): void
     {
+
+        if (count($this->workersInUse) >= $this->workersCapacity) {
+            throw new Exception("Cannot add more workers");
+        }
+
         $this->workersInUse[] = $worker;
         $worker->setIsWorking(true);
+        $worker->setCurrentPlace($this);
     }
+
 
     public function removeWorkers(): void
     {
