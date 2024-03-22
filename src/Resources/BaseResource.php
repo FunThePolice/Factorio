@@ -11,7 +11,7 @@ abstract class BaseResource implements IResource
     protected string $name;
     protected int $value;
     protected string $type;
-    protected object $producer;
+    protected IWorker $producer;
 
     public function getName(): string
     {

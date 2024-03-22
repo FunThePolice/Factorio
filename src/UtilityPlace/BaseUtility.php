@@ -3,10 +3,6 @@
 namespace App\UtilityPlace;
 
 use App\UtilityPlace\Contracts\IUtility;
-use App\UtilityPlace\Infirmary\Infirmary;
-use App\UtilityPlace\Infirmary\ProcessInfirmary;
-use App\UtilityPlace\RestRoom\ProcessRestRoom;
-use App\UtilityPlace\RestRoom\RestRoom;
 use App\Workers\Contracts\IWorker;
 use Exception;
 
@@ -42,6 +38,11 @@ abstract class BaseUtility implements IUtility
         $this->workersInUse[] = $worker;
         $worker->setIsWorking(false);
         $worker->setCurrentPlace($this);
+    }
+
+    public function removeWorker(int $id): void
+    {
+        unset($this->workersInUse[$id]);
     }
 
     public function getOccupation(): string

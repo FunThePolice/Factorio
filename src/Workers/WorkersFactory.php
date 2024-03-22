@@ -7,11 +7,16 @@ use App\State\State;
 
 class WorkersFactory
 {
+    protected State $state;
+    public function __construct(State $state)
+    {
+        $this->state = $state;
+    }
 
-    public function createWorker(string $type,State $state,string $name): IWorker
+    public function createWorker(string $type, string $name): IWorker
     {
         /** @var IWorker $worker */
-        $worker = new $type($state);
+        $worker = new $type($this->state);
         $worker->setName($name);
         return $worker;
     }

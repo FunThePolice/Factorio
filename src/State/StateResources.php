@@ -2,6 +2,7 @@
 
 namespace App\State;
 
+use App\Exceptions\State\NoResourceOfType;
 use App\Resources\Contracts\IResource;
 use Exception;
 
@@ -44,7 +45,7 @@ class StateResources
     {
 
         if ($this->countItemsOfType($type) <= 0) {
-            throw new Exception('No resources of type');
+            throw new NoResourceOfType();
         }
 
         array_splice($this->storage[$type],0,$amount);

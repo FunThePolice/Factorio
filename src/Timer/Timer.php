@@ -2,18 +2,14 @@
 
 namespace App\Timer;
 
-use App\Workers\Workers\Farmer;
-use App\Workers\Workers\Manufacturer;
+use App\UtilityPlace\Infirmary\Infirmary;
+use App\UtilityPlace\RestRoom\RestRoom;
+use App\UtilityPlace\UtilityFactory;
 use App\Workers\Workers\Miner;
-use App\Workers\Workers\Processor;
 use App\Workers\WorkersFactory;
 use App\MainManager\MainManager;
-use App\Resources\MineResources\Iron;
 use App\State\State;
-use App\WorkPlace\Farming\CornFarm;
-use App\WorkPlace\Manufacturing\AssambleyShop;
 use App\WorkPlace\Mining\IronMine;
-use App\WorkPlace\Processing\MeltingSite;
 use App\WorkPlace\WorkPlaceFactory;
 
 class Timer
@@ -41,17 +37,21 @@ class Timer
         $active = true;
         $nextTime = microtime(true) + static::TICK_INTERVAL; // Set initial delay
 
-        $workersFactory = new WorkersFactory();
-        $workPlaceFactory = new WorkPlaceFactory();
-        $worker1 = $workersFactory->createWorker(Miner::class,$this->state,'Fucker');
-        $workPlace1 = $workPlaceFactory->createWorkPlace(IronMine::class,$this->state,'CockFarm');
+        $workersFactory = new WorkersFactory($this->state);
+        $workPlaceFactory = new WorkPlaceFactory($this->state);
+        $utilityFactory = new UtilityFactory();
+        $infirmary = $utilityFactory->createUtilityPlace(Infirmary::class);
+        $restRoom = $utilityFactory->createUtilityPlace(RestRoom::class);
+        $worker1 = $workersFactory->createWorker(Miner::class,'Fucker');
+        $workPlace1 = $workPlaceFactory->createWorkPlace(IronMine::class,'CockFarm');
 
         $this->mainManager->addWorker($worker1);
         $this->mainManager->addWorkplace($workPlace1);
+        $this->mainManager->addUtility($infirmary);
+        $this->mainManager->addUtility($restRoom);
 
         $workPlace1->addWorker($worker1);
 
-        //$this->state->getStateResources()->addItems([new Iron(),new Iron()]);
 
         while($active) {
             usleep(1000); // optional, if you want to be considerate

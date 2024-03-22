@@ -6,6 +6,7 @@ use App\Resources\Contracts\IResource;
 use App\State\State;
 use App\UtilityPlace\Contracts\IHeal;
 use App\UtilityPlace\Contracts\IRest;
+use App\UtilityPlace\Contracts\IUtility;
 use App\Workers\Contracts\IWorker;
 use App\Workers\WorkerProcessing\Heal;
 use App\Workers\WorkerProcessing\Rest;
@@ -19,17 +20,19 @@ abstract class BaseWorker implements IWorker
     protected string $occupation;
     protected int $productPerPeriod;
     protected bool $isWorking = false;
-    protected object $currentPlace;
+    protected IWorkPlace|IUtility $currentPlace;
+    protected IWorkPlace $assignedWorkPlace;
     protected int $maxHealth = 100;
     protected int $currentHealth = 100;
     protected int $hungerValue = 0;
     protected int $hungerDamage = 0;
     protected int $entityCost;
-    protected int $maxEnergy;
+    protected int $maxEnergy = 100;
     protected int $currentEnergy;
     protected int $currentLevel = 1;
     protected int $currentExp = 0;
     protected int $expToLvlUp = 200;
+
     protected State $state;
 
 
@@ -42,7 +45,7 @@ abstract class BaseWorker implements IWorker
      */
     public function manage(): void
     {
-        $this->processWorker()->handle();
+        $this->processWorkerStatus()->handle();
     }
 
     public function produceResources($resourcesToProduce): array
@@ -51,24 +54,25 @@ abstract class BaseWorker implements IWorker
         foreach ($resourcesToProduce as $resource) {
             for ($i = 1; $i <= $this->getProductPerPeriod(); $i++) {
                 /** @var IResource $resource */
-                $producedResources[] = new $resource();
-                //$resource->setProducer($this);
+                $resource = new $resource();
+                $resource->setProducer($this);
+                $producedResources[] = $resource;
             }
         }
         return $producedResources;
     }
 
-    public function processWorker(): Work|Rest|Heal
+    public function processWorkerStatus(): Work|Rest|Heal
     {
         if ($this->getCurrentPlace() instanceof IHeal) {
-            return new Heal($this->state);
+            return new Heal($this->state,$this);
         }
 
         if ($this->getCurrentPlace() instanceof IRest) {
-            return new Rest($this->state);
+            return new Rest($this->state,$this);
         }
 
-        return new Work($this->state);
+        return new Work($this->state,$this);
     }
 
     public function getName(): string
@@ -106,7 +110,7 @@ abstract class BaseWorker implements IWorker
         $this->isWorking = $isWorking;
     }
 
-    public function getCurrentPlace(): object
+    public function getCurrentPlace(): IWorkPlace|IUtility
     {
         return $this->currentPlace;
     }
@@ -114,6 +118,16 @@ abstract class BaseWorker implements IWorker
     public function setCurrentPlace($currentPlace): void
     {
         $this->currentPlace = $currentPlace;
+    }
+
+    public function getAssignedWorkPlace(): IWorkPlace
+    {
+        return $this->assignedWorkPlace;
+    }
+
+    public function assignWorkPlace($workPlace): void
+    {
+        $this->assignedWorkPlace = $workPlace;
     }
     public function getMaxHealth(): int
     {
@@ -200,7 +214,7 @@ abstract class BaseWorker implements IWorker
         $this->expToLvlUp = $expToLvlUp;
     }
 
-    protected function processEnergy(): int
+    public function processEnergy(): int
     {
         $result = $this->currentEnergy - 10;
         return $this->currentEnergy = $result;
@@ -209,7 +223,7 @@ abstract class BaseWorker implements IWorker
     /**
      * @throws Exception
      */
-    protected function processHunger(): void
+    public function processHunger(): void
     {
 
         if ($this->state->getStateResources()->countItemsOfType('Farming') > 0) {
@@ -223,12 +237,12 @@ abstract class BaseWorker implements IWorker
     /**
      * @throws Exception
      */
-    protected function useFood(): void
+    public function useFood(): void
     {
         $this->state->getStateResources()->removeItemsByType(1,'Farming');
     }
 
-    protected function processExp(): void
+    public function processExp(): void
     {
         if ($this->isWorking()) {
             $this->currentExp += 20;
@@ -240,7 +254,7 @@ abstract class BaseWorker implements IWorker
         }
     }
 
-    protected function lvlUp(): void
+    public function lvlUp(): void
     {
         $this->currentLevel += 1;
         $this->expToLvlUp += 100;
@@ -248,31 +262,31 @@ abstract class BaseWorker implements IWorker
         $this->productPerPeriod += 1;
     }
 
-    protected function processHealthDamage(): void
+    public function processHealthDamage(): void
     {
         if ($this->hungerValue === 3) {
             $this->currentHealth -= 10;
         }
     }
 
-    protected function processHealing(): void
+    public function processHealing(): void
     {
-        while ($this->currentHealth <= $this->maxHealth) {
+        if ($this->currentHealth <= $this->maxHealth) {
             $this->currentHealth += 10;
-
-            if ($this->maxHealth - $this->currentHealth < 10) {
-                $this->currentHealth = $this->maxHealth;
-                break;
-            }
-
         }
     }
 
-    protected function processResting(): void
+    public function processResting(): void
     {
         if ($this->currentEnergy <= $this->maxEnergy) {
             $this->currentEnergy += 10;
         }
+
+        if ($this->currentEnergy >= $this->maxEnergy) {
+            $this->setCurrentEnergy($this->maxEnergy);
+        }
     }
+
+
 
 }

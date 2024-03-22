@@ -18,6 +18,8 @@ interface IWorker
     public function setIsWorking(bool $isWorking): void;
     public function getCurrentPlace();
     public function setCurrentPlace($currentPlace): void;
+    public function getAssignedWorkPlace(): IWorkPlace;
+    public function assignWorkPlace($workPlace): void;
     public function getMaxHealth(): int;
     public function getCurrentHealth(): int;
     public function setCurrentHealth(int $currentHealth): void;

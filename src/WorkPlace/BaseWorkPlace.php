@@ -2,6 +2,7 @@
 
 namespace App\WorkPlace;
 
+use App\Exceptions\WorkPlaces\CannotAddMoreWorkersException;
 use App\Workers\Contracts\IWorker;
 use App\Resources\Contracts\IResource;
 use App\Resources\MineResources\Iron;
@@ -24,7 +25,6 @@ abstract class BaseWorkPlace implements IWorkPlace
     protected string $occupation;
     protected array $resourcesToProduce;
     protected array $resourcesRequired;
-    protected array $gatheredPerTick;
 
     protected State $state;
 
@@ -72,6 +72,9 @@ abstract class BaseWorkPlace implements IWorkPlace
         $this->currentResources = $this->currentResources - count($gatheredResources);
     }
 
+    /**
+     * @throws Exception
+     */
     public function useRequiredResource(int $amount): void
     {
         foreach ($this->resourcesRequired as $resource) {
@@ -135,14 +138,19 @@ abstract class BaseWorkPlace implements IWorkPlace
     {
 
         if (count($this->workersInUse) >= $this->workersCapacity) {
-            throw new Exception("Cannot add more workers");
+            throw new CannotAddMoreWorkersException("Cannot add more workers");
         }
 
         $this->workersInUse[] = $worker;
         $worker->setIsWorking(true);
         $worker->setCurrentPlace($this);
+        $worker->assignWorkPlace($this);
     }
 
+    public function removeWorker(int $id): void
+    {
+        unset($this->workersInUse[$id]);
+    }
 
     public function removeWorkers(): void
     {
