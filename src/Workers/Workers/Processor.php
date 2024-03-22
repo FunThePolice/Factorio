@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Entities\Workers;
+namespace App\Workers\Workers;
 
-use App\Entities\BaseWorker;
+use App\Workers\BaseWorker;
 
-class Miner extends BaseWorker
+class Processor extends BaseWorker
 {
-    protected string $occupation = 'Mining';
-    protected  int $productPerPeriod = 2;
+    protected string $occupation = 'Processing';
+    protected  int $productPerPeriod = 1;
     protected int $maxHealth = 100;
     protected int $currentHealth = 100;
     protected int $entityCost = 10;
@@ -16,5 +16,4 @@ class Miner extends BaseWorker
     protected int $currentExp = 0;
     protected int $expToLvlUp = 200;
     protected int $currentLevel = 1;
-
 }

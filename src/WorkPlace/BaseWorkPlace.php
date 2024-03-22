@@ -2,13 +2,15 @@
 
 namespace App\WorkPlace;
 
-use App\Entities\Contracts\IWorker;
+use App\Exceptions\WorkPlaces\CannotAddMoreWorkersException;
+use App\Workers\Contracts\IWorker;
 use App\Resources\Contracts\IResource;
 use App\Resources\MineResources\Iron;
 use App\State\State;
 use App\WorkPlace\Contracts\IRecycle;
 use App\WorkPlace\Contracts\IWorkPlace;
 use App\WorkPlace\Processing\MeltingSite;
+use Exception;
 
 abstract class BaseWorkPlace implements IWorkPlace
 {
@@ -23,7 +25,6 @@ abstract class BaseWorkPlace implements IWorkPlace
     protected string $occupation;
     protected array $resourcesToProduce;
     protected array $resourcesRequired;
-    protected array $gatheredPerTick;
 
     protected State $state;
 
@@ -42,10 +43,6 @@ abstract class BaseWorkPlace implements IWorkPlace
             }
 
             if ($this->isEmpty()) {
-                break;
-            }
-
-            if (count($this->workersInUse) > $this->workersCapacity){
                 break;
             }
 
@@ -75,12 +72,15 @@ abstract class BaseWorkPlace implements IWorkPlace
         $this->currentResources = $this->currentResources - count($gatheredResources);
     }
 
+    /**
+     * @throws Exception
+     */
     public function useRequiredResource(int $amount): void
     {
         foreach ($this->resourcesRequired as $resource) {
             /** @var IResource $resource */
             $var = new $resource();
-            $this->state->getStateResources()->removeItemsByType($amount,$var->getType());
+            $this->state->getStateResources()->removeItemsByType($amount, $var->getType());
         }
     }
 
@@ -91,8 +91,8 @@ abstract class BaseWorkPlace implements IWorkPlace
             /** @var IResource $resource */
             $var = new $resource();
             $result = $this->state->getStateResources()->countItemsOfType($var->getType());
+            $result += $result;
         }
-        $result += $result;
         return $result;
     }
 
@@ -131,10 +131,25 @@ abstract class BaseWorkPlace implements IWorkPlace
         return $this->workersInUse;
     }
 
+    /**
+     * @throws Exception
+     */
     public function addWorker(IWorker $worker): void
     {
+
+        if (count($this->workersInUse) >= $this->workersCapacity) {
+            throw new CannotAddMoreWorkersException("Cannot add more workers");
+        }
+
         $this->workersInUse[] = $worker;
         $worker->setIsWorking(true);
+        $worker->setCurrentPlace($this);
+        $worker->assignWorkPlace($this);
+    }
+
+    public function removeWorker(int $id): void
+    {
+        unset($this->workersInUse[$id]);
     }
 
     public function removeWorkers(): void

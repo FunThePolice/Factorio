@@ -2,18 +2,14 @@
 
 namespace App\Timer;
 
-use App\Entities\Workers\Farmer;
-use App\Entities\Workers\Manufacturer;
-use App\Entities\Workers\Miner;
-use App\Entities\Workers\Processor;
-use App\Entities\WorkersFactory;
+use App\UtilityPlace\Infirmary\Infirmary;
+use App\UtilityPlace\RestRoom\RestRoom;
+use App\UtilityPlace\UtilityFactory;
+use App\Workers\Workers\Miner;
+use App\Workers\WorkersFactory;
 use App\MainManager\MainManager;
-use App\Resources\MineResources\Iron;
 use App\State\State;
-use App\WorkPlace\Farming\CornFarm;
-use App\WorkPlace\Manufacturing\AssambleyShop;
 use App\WorkPlace\Mining\IronMine;
-use App\WorkPlace\Processing\MeltingSite;
 use App\WorkPlace\WorkPlaceFactory;
 
 class Timer
@@ -21,6 +17,8 @@ class Timer
     protected MainManager $mainManager;
 
     protected State $state;
+
+    const TICK_INTERVAL = 3;
 
 
     public function __construct(MainManager $mainManager,State $state)
@@ -37,34 +35,30 @@ class Timer
     function start(): void
     {
         $active = true;
-        $interval = 3;
-        $nextTime = microtime(true) + $interval; // Set initial delay
+        $nextTime = microtime(true) + static::TICK_INTERVAL; // Set initial delay
 
-        $workersFactory = new WorkersFactory();
-        $workPlaceFactory = new WorkPlaceFactory();
+        $workersFactory = new WorkersFactory($this->state);
+        $workPlaceFactory = new WorkPlaceFactory($this->state);
+        $utilityFactory = new UtilityFactory();
+        $infirmary = $utilityFactory->createUtilityPlace(Infirmary::class);
+        $restRoom = $utilityFactory->createUtilityPlace(RestRoom::class);
         $worker1 = $workersFactory->createWorker(Miner::class,'Fucker');
-        $worker2 = $workersFactory->createWorker(Processor::class, 'fuck');
-        $worker3 = $workersFactory->createWorker(Manufacturer::class,'Ford');
-        $workPlace1 = $workPlaceFactory->createWorkPlace(IronMine::class,$this->state,'CockFarm');
-        $workPlace2 = $workPlaceFactory->createWorkPlace(MeltingSite::class,$this->state,'Melt');
-        $workPlace3 = $workPlaceFactory->createWorkPlace(AssambleyShop::class,$this->state,'Ass');
-        $this->mainManager->addEntity($worker1);
-        $this->mainManager->addEntity($worker2);
-        $this->mainManager->addEntity($worker3);
+        $workPlace1 = $workPlaceFactory->createWorkPlace(IronMine::class,'CockFarm');
+
+        $this->mainManager->addWorker($worker1);
         $this->mainManager->addWorkplace($workPlace1);
-        $this->mainManager->addWorkplace($workPlace2);
-        $this->mainManager->addWorkplace($workPlace3);
+        $this->mainManager->addUtility($infirmary);
+        $this->mainManager->addUtility($restRoom);
+
         $workPlace1->addWorker($worker1);
-        $workPlace2->addWorker($worker2);
-        $workPlace3->addWorker($worker3);
-        //$this->state->getStateResources()->addItems([new Iron(),new Iron()]);
+
 
         while($active) {
             usleep(1000); // optional, if you want to be considerate
 
             if (microtime(true) >= $nextTime) {
                 $this->runIt();
-                $nextTime = microtime(true) + $interval;
+                $nextTime = microtime(true) + static::TICK_INTERVAL;
             }
 
             // Do other stuff (you can have as many other timers as you want)

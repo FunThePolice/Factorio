@@ -2,8 +2,8 @@
 
 namespace App\Resources;
 
-use App\Entities\BaseWorker;
-use App\Entities\Contracts\IWorker;
+use App\Workers\BaseWorker;
+use App\Workers\Contracts\IWorker;
 use App\Resources\Contracts\IResource;
 
 abstract class BaseResource implements IResource
@@ -33,15 +33,12 @@ abstract class BaseResource implements IResource
         $this->value = $value;
     }
 
-    public function getProducer(): IWorker
+    public function getProducer(): object
     {
         return $this->producer;
     }
 
-    /**
-     * @param IWorker $producer
-     */
-    public function setProducer(BaseWorker $producer): void
+    public function setProducer($producer): void
     {
         $this->producer = $producer;
     }

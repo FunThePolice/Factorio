@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Entities\Workers;
+namespace App\Workers\Workers;
 
-use App\Entities\BaseWorker;
+use App\Workers\BaseWorker;
 
 class Manufacturer extends BaseWorker
 {

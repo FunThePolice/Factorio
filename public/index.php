@@ -7,9 +7,8 @@ use App\Timer\Timer;
 
 require __DIR__.'/../vendor/autoload.php';
 
-$state = new State(new StateResources());
-
-$manager = new MainManager($state);
+$manager = new MainManager();
+$state = new State(new StateResources(),$manager);
 $timer = new Timer($manager,$state);
 
 $timer->start();
